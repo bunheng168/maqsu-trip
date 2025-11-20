@@ -6,6 +6,10 @@ const headerDay = document.getElementById('headerDay');
 const detailsSection = document.getElementById('detailsSection');
 const detailsDescription = document.getElementById('detailsDescription');
 const detailsMap = document.getElementById('detailsMap');
+const menuIcon = document.querySelector('.menu-icon');
+const sideMenu = document.getElementById('sideMenu');
+const menuClose = document.getElementById('menuClose');
+const menuOverlayBg = document.getElementById('menuOverlayBg');
 let slides = [];
 let slidesData = [];
 let currentIndex = 0;
@@ -501,4 +505,27 @@ function scrollToDetails() {
     if (detailsSection) {
         detailsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
+}
+
+// Menu functionality - Side menu slides from right
+if (menuIcon) {
+    menuIcon.addEventListener('click', () => {
+        sideMenu.classList.add('active');
+        menuOverlayBg.classList.add('active');
+    });
+}
+
+if (menuClose) {
+    menuClose.addEventListener('click', () => {
+        sideMenu.classList.remove('active');
+        menuOverlayBg.classList.remove('active');
+    });
+}
+
+// Close side menu when clicking on overlay background
+if (menuOverlayBg) {
+    menuOverlayBg.addEventListener('click', () => {
+        sideMenu.classList.remove('active');
+        menuOverlayBg.classList.remove('active');
+    });
 }
