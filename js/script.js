@@ -1,6 +1,11 @@
-const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQYZZZbzCKQ5X4If91dMyhDKwJAil4qtK23fsDBctNciNemV-qMRSiN0rUHTazIxuWmpNrbQ6ghD6gu/pub?gid=685795691&single=true&output=csv';
+const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTE5RtiPB3DI_bnki3LDLBjNVMXz5Y0klAES0HCU_4MvzBgV68skzG7R9-MAOp-jIhYeZxaMggTZYpc/pub?gid=685795691&single=true&output=csv';
 const container = document.getElementById('carousel');
-const destinationLabel = document.getElementById('destinationLabel');
+const timelineContainer = document.getElementById('timeline');
+const timelineWrapper = document.getElementById('timelineContainer');
+const headerDay = document.getElementById('headerDay');
+const detailsSection = document.getElementById('detailsSection');
+const detailsDescription = document.getElementById('detailsDescription');
+const detailsMap = document.getElementById('detailsMap');
 let slides = [];
 let slidesData = [];
 let currentIndex = 0;
@@ -112,19 +117,67 @@ function findCurrentDestinationIndex(data) {
     return 0;
 }
 
-// Update destination label
-function updateDestinationLabel() {
-    const totalSlides = slides.length;
-    if (totalSlides === 0) return;
+// Update timeline - show only items around current index, always centered
+function updateTimeline() {
+    if (slidesData.length === 0) return;
     
-    const nextIndex = (currentIndex + 1) % totalSlides;
+    const itemsToShow = 5; // Show 5 items: 2 left, 1 center (active), 2 right
+    const halfItems = Math.floor(itemsToShow / 2);
     
-    if (currentIndex === findCurrentDestinationIndex(slidesData)) {
-        destinationLabel.textContent = 'Current Destination';
-    } else if (currentIndex === nextIndex) {
-        destinationLabel.textContent = 'Destination';
-    } else {
-        destinationLabel.textContent = 'Next Destination';
+    // Calculate which items to show, trying to center the active item
+    let startIndex = currentIndex - halfItems;
+    let endIndex = currentIndex + halfItems;
+    
+    // Adjust for boundaries while trying to keep active item centered
+    if (startIndex < 0) {
+        const adjustment = Math.abs(startIndex);
+        startIndex = 0;
+        endIndex = Math.min(endIndex + adjustment, slidesData.length - 1);
+    }
+    if (endIndex >= slidesData.length) {
+        const adjustment = endIndex - slidesData.length + 1;
+        endIndex = slidesData.length - 1;
+        startIndex = Math.max(0, startIndex - adjustment);
+    }
+    
+    timelineContainer.innerHTML = '';
+    
+    // Create timeline items for the visible range
+    for (let i = startIndex; i <= endIndex; i++) {
+        const slideData = slidesData[i];
+        const timelineItem = document.createElement('div');
+        timelineItem.classList.add('timeline-item');
+        
+        // Determine position relative to center
+        const position = i - currentIndex;
+        
+        if (i === currentIndex) {
+            timelineItem.classList.add('active');
+        } else if (position < 0) {
+            timelineItem.classList.add('left-item');
+        } else {
+            timelineItem.classList.add('right-item');
+        }
+        
+        timelineItem.innerHTML = `
+            <div class="timeline-bullet">
+                <div class="bullet-inner"></div>
+                <div class="bullet-pulse"></div>
+            </div>
+            <div class="timeline-content">
+                <span class="timeline-location">${slideData.location}</span>
+            </div>
+        `;
+        
+        // Add click handler to navigate to this slide
+        timelineItem.addEventListener('click', () => {
+            if (!isTransitioning && i !== currentIndex) {
+                currentIndex = i;
+                updateSlides();
+            }
+        });
+        
+        timelineContainer.appendChild(timelineItem);
     }
 }
 
@@ -146,7 +199,10 @@ fetch(csvUrl)
                 location: field("ទីតាំង"),
                 start: formatTime(field("ផ្តើម")),
                 end: formatTime(field("ចប់")),
-                activity: field("សកម្មភាព")
+                activity: field("សកម្មភាព"),
+                day: field("Day") || field("day") || "",
+                imageUrl: field("Image URL") || field("image url") || field("ImageUrl") || field("imageUrl") || field("Image") || field("image") || "",
+                googleMap: field("google map") || field("Google Map") || field("googlemap") || field("GoogleMap") || field("Google Maps") || field("google maps") || field("map") || field("Map") || ""
             });
         });
 
@@ -158,11 +214,19 @@ fetch(csvUrl)
         slidesData.forEach((slideData, index) => {
             const slide = document.createElement('div');
             slide.classList.add('carousel-slide');
-            slide.style.backgroundImage = `url('https://i.postimg.cc/mZ9sfBH8/Cambodia-temple-9.jpg')`;
+            
+            // Use image URL if available, otherwise use default
+            const defaultImage = 'https://i.postimg.cc/mZ9sfBH8/Cambodia-temple-9.jpg';
+            const imageUrl = slideData.imageUrl && slideData.imageUrl.trim() !== '' 
+                ? slideData.imageUrl.trim() 
+                : defaultImage;
+            slide.style.backgroundImage = `url('${imageUrl}')`;
             
             slide.innerHTML = `
                 <div class="slide-content">
-                    <div class="duration-badge">${slideData.duration}</div>
+                    <div class="badges-container">
+                        <div class="duration-badge">${slideData.duration}</div>
+                    </div>
                     <h1 class="slide-title">${slideData.location}</h1>
                     <div class="time-range">
                         <span>${slideData.start}</span>
@@ -170,10 +234,14 @@ fetch(csvUrl)
                         <span>${slideData.end}</span>
                     </div>
                     <p class="slide-description">${slideData.activity}</p>
-                    <button class="cta-button">
-                        Explore Now
-                        <span class="arrow">→</span>
-                    </button>
+                    <div class="scroll-indicator">
+                        <div class="scroll-arrow">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 19V5M5 12l7-7 7 7"/>
+                            </svg>
+                        </div>
+                        <div class="scroll-text">More Information</div>
+                    </div>
                 </div>
             `;
             
@@ -186,7 +254,9 @@ fetch(csvUrl)
             slides[currentIndex].classList.add('active');
             const offset = currentIndex * window.innerWidth;
             container.style.transform = `translate3d(-${offset}px, 0, 0)`;
-            updateDestinationLabel();
+            updateHeaderDay();
+            updateDetailsSection();
+            updateTimeline();
         }
 
         setupTouchHandlers();
@@ -261,9 +331,140 @@ function updateSlides() {
         slide.classList.toggle('active', i === currentIndex);
     });
 
-    updateDestinationLabel();
+    // Update header day display
+    updateHeaderDay();
+
+    // Update details section
+    updateDetailsSection();
+
+    // Update timeline to show items around current index
+    updateTimeline();
 
     setTimeout(() => isTransitioning = false, 500);
+}
+
+// Update header day display
+function updateHeaderDay() {
+    if (slidesData.length === 0 || !headerDay) return;
+    
+    const currentSlideData = slidesData[currentIndex];
+    if (currentSlideData && currentSlideData.day) {
+        // Format day: if it's just a number, add "Day" prefix, otherwise use as is
+        let dayText = currentSlideData.day.trim();
+        // Check if it's just a number (with or without "Day" prefix)
+        if (/^\d+$/.test(dayText)) {
+            // It's just a number, add "Day" prefix
+            headerDay.textContent = `Day ${dayText}`;
+        } else if (!/^day\s+/i.test(dayText)) {
+            // It doesn't start with "Day", add it
+            headerDay.textContent = `Day ${dayText}`;
+        } else {
+            // It already has "Day", use as is (but capitalize properly)
+            headerDay.textContent = dayText.charAt(0).toUpperCase() + dayText.slice(1);
+        }
+        headerDay.style.display = 'block';
+    } else {
+        headerDay.style.display = 'none';
+    }
+}
+
+// Update details section with description and google map
+function updateDetailsSection() {
+    if (slidesData.length === 0 || !detailsSection || !detailsDescription || !detailsMap) return;
+    
+    const currentSlideData = slidesData[currentIndex];
+    // Debug: log the google map data
+    console.log('Current slide data:', currentSlideData);
+    console.log('Google Map data:', currentSlideData?.googleMap);
+    console.log('Google Map data type:', typeof currentSlideData?.googleMap);
+    console.log('Contains iframe?', currentSlideData?.googleMap?.includes('<iframe') || currentSlideData?.googleMap?.includes('<IFRAME'));
+    
+    if (currentSlideData) {
+        // Update description
+        if (currentSlideData.activity) {
+            detailsDescription.innerHTML = `<h2>About</h2><p>${currentSlideData.activity}</p>`;
+        } else {
+            detailsDescription.innerHTML = '';
+        }
+        
+        // Update Google Map - Display iframe directly from spreadsheet
+        if (currentSlideData.googleMap && currentSlideData.googleMap.trim() !== '') {
+            const mapData = currentSlideData.googleMap.trim();
+            let mapHTML = '';
+            
+            // Check if it's an iframe embed code
+            const hasIframe = mapData.toLowerCase().includes('<iframe') || mapData.toLowerCase().includes('&lt;iframe') || mapData.includes('embed?pb=');
+            
+            if (hasIframe) {
+                // Extract the pb parameter value from the broken data
+                // Look for pb= followed by the parameter string (starts with ! and contains alphanumeric and special chars)
+                const pbMatch = mapData.match(/pb=([!0-9a-zA-Z%\-_\.]+)/i);
+                
+                if (pbMatch) {
+                    // Found the pb parameter, reconstruct the clean URL
+                    const pbValue = pbMatch[1]
+                        .replace(/&quot;/g, '')
+                        .replace(/&amp;/g, '&')
+                        .replace(/""/g, '')
+                        .replace(/"/g, '')
+                        .split('"')[0]  // Take only before any broken quotes
+                        .split('=')[0]  // Take only before any = signs
+                        .trim();
+                    
+                    const cleanUrl = 'https://www.google.com/maps/embed?pb=' + pbValue;
+                    // Create a link to open the map in Google Maps (convert embed URL to regular map URL)
+                    const mapLinkUrl = cleanUrl.replace('/embed?pb=', '/?pb=');
+                    console.log('Reconstructed clean embed URL:', cleanUrl);
+                    
+                    // Create a clean iframe with open map button at the bottom
+                    mapHTML = `<h2>Location</h2><div class="map-container"><iframe src="${cleanUrl}" width="100%" height="400" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe></div><div class="map-link-container"><a href="${mapLinkUrl}" target="_blank" class="map-link">Open Map</a></div>`;
+                } else {
+                    // Try to find embed?pb= pattern more broadly
+                    const embedMatch = mapData.match(/embed\?pb=([^\s"'>]+)/i);
+                    if (embedMatch) {
+                        let pbValue = embedMatch[1]
+                            .replace(/&quot;/g, '')
+                            .replace(/&amp;/g, '&')
+                            .replace(/""/g, '')
+                            .replace(/"/g, '')
+                            .split('"')[0]
+                            .split('=')[0]
+                            .trim();
+                        
+                        const cleanUrl = 'https://www.google.com/maps/embed?pb=' + pbValue;
+                        const mapLinkUrl = cleanUrl.replace('/embed?pb=', '/?pb=');
+                        console.log('Extracted embed URL:', cleanUrl);
+                        mapHTML = `<h2>Location</h2><div class="map-container"><iframe src="${cleanUrl}" width="100%" height="400" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe></div><div class="map-link-container"><a href="${mapLinkUrl}" target="_blank" class="map-link">Open Map</a></div>`;
+                    } else {
+                        // Last resort: try to extract any URL pattern
+                        const urlPattern = /https?:\/\/[^\s"'>]+/i;
+                        const urlMatch = mapData.match(urlPattern);
+                        if (urlMatch) {
+                            let cleanUrl = urlMatch[0]
+                                .replace(/&quot;/g, '')
+                                .replace(/&amp;/g, '&')
+                                .replace(/""/g, '')
+                                .trim();
+                            const mapLinkUrl = cleanUrl.includes('/embed') ? cleanUrl.replace('/embed', '') : cleanUrl;
+                            mapHTML = `<h2>Location</h2><div class="map-container"><iframe src="${cleanUrl}" width="100%" height="400" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe></div><div class="map-link-container"><a href="${mapLinkUrl}" target="_blank" class="map-link">Open Map</a></div>`;
+                        } else {
+                            mapHTML = `<h2>Location</h2><div class="map-container"><p style="color: #fff; padding: 20px;">Unable to parse map URL from data.</p></div>`;
+                        }
+                    }
+                }
+            } else {
+                // Not an iframe, display as is
+                mapHTML = `<h2>Location</h2><div class="map-container">${mapData}</div>`;
+            }
+            
+            detailsMap.innerHTML = mapHTML;
+            detailsMap.style.display = 'block';
+        } else {
+            // No map data - hide the details-map section
+            detailsMap.innerHTML = '';
+            detailsMap.style.display = 'none';
+        }
+    }
 }
 
 function nextSlide() {
