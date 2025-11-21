@@ -330,6 +330,10 @@ fetch(csvUrl)
                     </div>
                     <h1 class="slide-title">${slideData.location}</h1>
                     <div class="time-range">
+                        <svg class="time-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <polyline points="12 6 12 12 16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
                         <span>${slideData.start}</span>
                         <span class="time-separator">—</span>
                         <span>${slideData.end}</span>
