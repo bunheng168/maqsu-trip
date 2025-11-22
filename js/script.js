@@ -138,33 +138,95 @@ function hasSlidePassed(index) {
     return currentTime > endTime;
 }
 
-// Find the current destination based on time
+// Find the current destination based on date and time
 function findCurrentDestinationIndex(data) {
     const currentTime = getCurrentTimeInMinutes();
+    const currentDate = new Date();
+    const today = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
     
+    // First, filter activities for today's date
+    const todayActivities = [];
     for (let i = 0; i < data.length; i++) {
-        const startTime = timeToMinutes(data[i].start);
-        const endTime = timeToMinutes(data[i].end);
+        const slideData = data[i];
+        if (!slideData) continue;
         
-        // Handle cases where end time is past midnight
-        if (endTime < startTime) {
-            // Activity spans midnight
-            if (currentTime >= startTime || currentTime <= endTime) {
-                return i;
-            }
-        } else {
-            // Normal case
-            if (currentTime >= startTime && currentTime <= endTime) {
-                return i;
+        const slideDate = slideData.day ? parseDate(slideData.day.trim()) : null;
+        
+        if (slideDate) {
+            // Compare dates (ignoring time)
+            const slideDateOnly = new Date(slideDate.getFullYear(), slideDate.getMonth(), slideDate.getDate());
+            const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            
+            // Only include activities from today
+            if (slideDateOnly.getTime() === todayOnly.getTime()) {
+                todayActivities.push({ index: i, data: slideData });
             }
         }
     }
     
-    // If no match, find the next upcoming activity
+    // If we have activities for today, find the current one based on time
+    if (todayActivities.length > 0) {
+        // First, try to find an activity that's currently happening
+        for (let i = 0; i < todayActivities.length; i++) {
+            const activity = todayActivities[i];
+            const startTime = timeToMinutes(activity.data.start);
+            const endTime = timeToMinutes(activity.data.end);
+            
+            // Handle cases where end time is past midnight
+            if (endTime < startTime) {
+                // Activity spans midnight
+                if (currentTime >= startTime || currentTime <= endTime) {
+                    return activity.index;
+                }
+            } else {
+                // Normal case
+                if (currentTime >= startTime && currentTime <= endTime) {
+                    return activity.index;
+                }
+            }
+        }
+        
+        // If no current activity, find the next upcoming activity for today
+        for (let i = 0; i < todayActivities.length; i++) {
+            const activity = todayActivities[i];
+            const startTime = timeToMinutes(activity.data.start);
+            if (currentTime < startTime) {
+                return activity.index;
+            }
+        }
+        
+        // If all today's activities have passed, show the last one for today
+        return todayActivities[todayActivities.length - 1].index;
+    }
+    
+    // No activities for today - find the next upcoming activity (could be future days)
     for (let i = 0; i < data.length; i++) {
-        const startTime = timeToMinutes(data[i].start);
-        if (currentTime < startTime) {
-            return i;
+        const slideData = data[i];
+        if (!slideData) continue;
+        
+        const slideDate = slideData.day ? parseDate(slideData.day.trim()) : null;
+        
+        if (slideDate) {
+            const slideDateOnly = new Date(slideDate.getFullYear(), slideDate.getMonth(), slideDate.getDate());
+            const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            
+            // If this is a future date, or same date with future time
+            if (slideDateOnly > todayOnly) {
+                return i;
+            } else if (slideDateOnly.getTime() === todayOnly.getTime()) {
+                // Same date but we already checked today's activities above
+                // This shouldn't happen, but just in case
+                const startTime = timeToMinutes(slideData.start);
+                if (currentTime < startTime) {
+                    return i;
+                }
+            }
+        } else {
+            // No date info - check by time only (fallback behavior)
+            const startTime = timeToMinutes(slideData.start);
+            if (currentTime < startTime) {
+                return i;
+            }
         }
     }
     
