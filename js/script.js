@@ -15,6 +15,7 @@ let slidesData = [];
 let currentIndex = 0;
 let isTransitioning = false;
 let dateToDayMap = {}; // Maps date strings to day numbers
+let userHasNavigated = false; // Track if user has manually navigated
 
 // Format duration from HH:MM:SS to readable format
 function formatDuration(durationStr) {
@@ -234,7 +235,7 @@ function findCurrentDestinationIndex(data) {
     return 0;
 }
 
-// Update timeline - show only items around current index, always centered
+// Update timeline - show only items around current index, always centered with wrap-around
 function updateTimeline() {
     if (slidesData.length === 0 || !timelineContainer) return;
     
@@ -246,58 +247,44 @@ function updateTimeline() {
     const itemsToShow = 5; // Show 5 items: 2 left, 1 center (active), 2 right
     const halfItems = Math.floor(itemsToShow / 2);
     
-    // Calculate which items to show, trying to center the active item
-    let startIndex = currentIndex - halfItems;
-    let endIndex = currentIndex + halfItems;
-    
-    // Adjust for boundaries while trying to keep active item centered
-    if (startIndex < 0) {
-        const adjustment = Math.abs(startIndex);
-        startIndex = 0;
-        endIndex = Math.min(endIndex + adjustment, slidesData.length - 1);
-    }
-    if (endIndex >= slidesData.length) {
-        const adjustment = endIndex - (slidesData.length - 1);
-        endIndex = slidesData.length - 1;
-        startIndex = Math.max(0, startIndex - adjustment);
-    }
-    
-    // Final safety check: ensure indices are valid
-    startIndex = Math.max(0, Math.min(startIndex, slidesData.length - 1));
-    endIndex = Math.max(0, Math.min(endIndex, slidesData.length - 1));
-    
-    // Ensure startIndex <= endIndex
-    if (startIndex > endIndex) {
-        startIndex = endIndex;
-    }
-    
     timelineContainer.innerHTML = '';
     
-    // Create timeline items for the visible range
-    for (let i = startIndex; i <= endIndex; i++) {
-        // Safety check: ensure index is valid
-        if (i < 0 || i >= slidesData.length) continue;
+    // Create timeline items with wrap-around support
+    // Calculate which items to show, wrapping around at boundaries
+    for (let offset = -halfItems; offset <= halfItems; offset++) {
+        // Calculate the actual index with wrap-around
+        let itemIndex = currentIndex + offset;
         
-        const slideData = slidesData[i];
+        // Wrap around: if negative, wrap to end; if beyond length, wrap to start
+        if (itemIndex < 0) {
+            itemIndex = slidesData.length + itemIndex; // Wrap to end
+        } else if (itemIndex >= slidesData.length) {
+            itemIndex = itemIndex - slidesData.length; // Wrap to start
+        }
+        
+        // Safety check: ensure index is valid
+        if (itemIndex < 0 || itemIndex >= slidesData.length) continue;
+        
+        const slideData = slidesData[itemIndex];
         // Safety check: ensure slideData exists
         if (!slideData) continue;
         
         const timelineItem = document.createElement('div');
         timelineItem.classList.add('timeline-item');
         
-        // Determine position relative to center
-        const position = i - currentIndex;
-        
-        if (i === currentIndex) {
+        // Determine position relative to center - this ensures consistent styling
+        // Items before currentIndex are left-item, items after are right-item
+        // For wrap-around, we use the offset to determine position
+        if (offset === 0) {
             timelineItem.classList.add('active');
-        } else if (position < 0) {
+        } else if (offset < 0) {
             timelineItem.classList.add('left-item');
-        } else {
+        } else if (offset > 0) {
             timelineItem.classList.add('right-item');
         }
         
         // Check if this slide has passed and add 'passed' class
-        if (hasSlidePassed(i)) {
+        if (hasSlidePassed(itemIndex)) {
             timelineItem.classList.add('passed');
         }
         
@@ -317,7 +304,7 @@ function updateTimeline() {
         
         timelineItem.innerHTML = `
             <div class="timeline-image-container">
-                <img src="${imageUrl}" alt="${location}" class="timeline-image" onerror="this.src='${defaultImage}'" />
+                <img src="${imageUrl}" alt="${location}" class="timeline-image" />
             </div>
             <div class="timeline-content">
                 <span class="timeline-location">${location}</span>
@@ -325,14 +312,48 @@ function updateTimeline() {
             </div>
         `;
         
+        // Handle image loading for skeleton
+        const timelineImg = timelineItem.querySelector('.timeline-image');
+        const timelineImageContainer = timelineItem.querySelector('.timeline-image-container');
+        
+        if (timelineImg && timelineImageContainer) {
+            // Show skeleton while loading
+            timelineImg.classList.remove('loaded');
+            
+            // Remove skeleton when image loads
+            timelineImg.onload = function() {
+                timelineImg.classList.add('loaded');
+                timelineImageContainer.classList.add('image-loaded');
+            };
+            
+            // Handle image error - fallback to default
+            timelineImg.onerror = function() {
+                if (timelineImg.src !== defaultImage) {
+                    // Try default image
+                    timelineImg.src = defaultImage;
+                } else {
+                    // Even if default fails, show it and remove skeleton
+                    timelineImg.classList.add('loaded');
+                    timelineImageContainer.classList.add('image-loaded');
+                }
+            };
+            
+            // If image is already cached, trigger load immediately
+            if (timelineImg.complete && timelineImg.naturalHeight !== 0) {
+                timelineImg.classList.add('loaded');
+                timelineImageContainer.classList.add('image-loaded');
+            }
+        }
+        
         // Add click handler to navigate to this slide
         timelineItem.addEventListener('click', () => {
-            if (!isTransitioning && i !== currentIndex) {
+            if (!isTransitioning && itemIndex !== currentIndex) {
                 // Prevent navigating to slides that have passed
-                if (hasSlidePassed(i)) {
+                if (hasSlidePassed(itemIndex)) {
                     return;
                 }
-                currentIndex = i;
+                currentIndex = itemIndex;
+                userHasNavigated = true; // Mark that user has manually navigated
                 updateSlides();
             }
         });
@@ -376,16 +397,17 @@ fetch(csvUrl)
         // Create slides
         slidesData.forEach((slideData, index) => {
             const slide = document.createElement('div');
-            slide.classList.add('carousel-slide');
+            slide.classList.add('carousel-slide', 'image-loading');
             
             // Use image URL if available, otherwise use default
             const defaultImage = 'https://i.postimg.cc/mZ9sfBH8/Cambodia-temple-9.jpg';
             const imageUrl = slideData.imageUrl && slideData.imageUrl.trim() !== '' 
                 ? slideData.imageUrl.trim() 
                 : defaultImage;
-            slide.style.backgroundImage = `url('${imageUrl}')`;
             
+            // Add skeleton placeholder
             slide.innerHTML = `
+                <div class="image-skeleton"></div>
                 <div class="slide-content">
                     <div class="badges-container">
                         <div class="duration-badge">${slideData.duration}</div>
@@ -414,6 +436,21 @@ fetch(csvUrl)
             
             container.appendChild(slide);
             slides.push(slide);
+            
+            // Preload image
+            const img = new Image();
+            img.onload = function() {
+                slide.style.backgroundImage = `url('${imageUrl}')`;
+                slide.classList.remove('image-loading');
+                slide.classList.add('image-loaded');
+            };
+            img.onerror = function() {
+                // If image fails to load, use default and still remove skeleton
+                slide.style.backgroundImage = `url('${defaultImage}')`;
+                slide.classList.remove('image-loading');
+                slide.classList.add('image-loaded');
+            };
+            img.src = imageUrl;
         });
 
         // Initialize to current destination
@@ -708,14 +745,20 @@ function nextSlide() {
     }
     
     currentIndex = currentIndex + 1;
+    userHasNavigated = true; // Mark that user has manually navigated
     updateSlides();
 }
 
 function prevSlide() {
     if (isTransitioning || slides.length === 0) return;
     
+    // Don't allow sliding backward if we're already on the first page
+    if (currentIndex <= 0) {
+        return; // Block navigation - already at first page
+    }
+    
     // Calculate the immediate previous slide index
-    const prevIndex = (currentIndex - 1 + slides.length) % slides.length;
+    const prevIndex = currentIndex - 1;
     
     // If the immediate previous slide has passed, don't allow navigation back at all
     if (hasSlidePassed(prevIndex)) {
@@ -724,6 +767,7 @@ function prevSlide() {
     
     // Only navigate if the previous slide hasn't passed
     currentIndex = prevIndex;
+    userHasNavigated = true; // Mark that user has manually navigated
     updateSlides();
 }
 
@@ -734,8 +778,13 @@ window.addEventListener('resize', () => {
     }
 });
 
-// Auto-update current destination every minute
+// Auto-update current destination every minute (only if user hasn't manually navigated)
 setInterval(() => {
+    // Don't auto-update if user has manually navigated
+    if (userHasNavigated) {
+        return;
+    }
+    
     const newCurrentIndex = findCurrentDestinationIndex(slidesData);
     if (newCurrentIndex !== currentIndex) {
         currentIndex = newCurrentIndex;
