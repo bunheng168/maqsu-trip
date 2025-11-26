@@ -735,14 +735,16 @@ body, html {
     padding: 12px;
     gap: 12px;
     z-index: 100;
-    transition: opacity 0.3s ease, transform 0.3s ease;
+    transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
     pointer-events: auto;
+    visibility: visible;
 }
 
 .scroll-indicator.hidden {
     opacity: 0;
     transform: translateX(-50%) translateY(20px);
     pointer-events: none;
+    visibility: hidden;
 }
 
 .scroll-arrow {

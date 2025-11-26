@@ -884,7 +884,7 @@ function initTimelineScroll() {
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop;
         const headerDayEl = document.getElementById('headerDay');
         
-        if (scrollTop > 100) {
+        if (scrollTop > 50) {
             timelineEl.classList.add('scrolled');
             // Hide headerDay when scrolled
             if (headerDayEl) {
