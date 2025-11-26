@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="MAQSU Trip">
+    <meta name="description" content="MAQSU Trip - Sponsors & Donations">
+    <title>Supporters - Pink Trip</title>
+    <link rel="manifest" href="./manifest.json">
+    <link rel="apple-touch-icon" href="icons/android-launchericon-192-192.png">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Khmer&family=Poppins:wght@300;400;500;600;700&family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <a href="index.html" class="back-button">← Back to Timeline</a>
+        </div>
+    </div>
+
+    <main class="donate-page">
+        <div class="donate-card">
+            <div class="donate-header">
+                <div>
+                    <h1>Our Sponsors</h1>
+                    <p>Thank you to everyone who helps power this journey.</p>
+                </div>
+                <div class="donate-count" id="sponsorCount">0 supporters</div>
+            </div>
+
+            <div class="sponsor-grid hidden" id="sponsorGrid"></div>
+            <div class="agenda-empty hidden" id="sponsorEmpty">
+                <p>No sponsors have been added yet.</p>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/donate.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').catch(() => {});
+            });
+        }
+    </script>
+</body>
+</html>
+

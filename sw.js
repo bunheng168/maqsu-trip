@@ -3,11 +3,13 @@ const urlsToCache = [
   './',
   './index.html',
   './agenda.html',
+  './donate.html',
   './emergency.html',
   './profile.html',
   './css/style.css',
   './js/script.js',
   './js/agenda.js',
+  './js/donate.js',
   './js/emergency.js',
   'https://fonts.googleapis.com/css2?family=Khmer&family=Poppins:wght@300;400;500;600;700&family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap'
 ];
