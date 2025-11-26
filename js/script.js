@@ -9,6 +9,7 @@ const detailsMap = document.getElementById('detailsMap');
 const navArrowLeft = document.getElementById('navArrowLeft');
 const navArrowRight = document.getElementById('navArrowRight');
 const scrollIndicator = document.getElementById('scrollIndicator');
+const installAppButton = document.getElementById('installAppButton');
 const menuIcon = document.querySelector('.menu-icon');
 const sideMenu = document.getElementById('sideMenu');
 const menuClose = document.getElementById('menuClose');
@@ -19,6 +20,41 @@ let currentIndex = 0;
 let isTransitioning = false;
 let dateToDayMap = {}; // Maps date strings to day numbers
 let userHasNavigated = false; // Track if user has manually navigated
+let deferredInstallPrompt = null;
+
+function setupPwaInstallPrompt() {
+    if (!installAppButton) return;
+
+    window.addEventListener('beforeinstallprompt', (event) => {
+        event.preventDefault();
+        deferredInstallPrompt = event;
+        installAppButton.classList.remove('hidden');
+    });
+
+    installAppButton.addEventListener('click', async () => {
+        if (!deferredInstallPrompt) {
+            return;
+        }
+
+        installAppButton.disabled = true;
+        try {
+            deferredInstallPrompt.prompt();
+            const { outcome } = await deferredInstallPrompt.userChoice;
+            console.log(`PWA install ${outcome}`);
+        } catch (error) {
+            console.error('PWA install prompt failed', error);
+        } finally {
+            installAppButton.disabled = false;
+            installAppButton.classList.add('hidden');
+            deferredInstallPrompt = null;
+        }
+    });
+
+    window.addEventListener('appinstalled', () => {
+        deferredInstallPrompt = null;
+        installAppButton.classList.add('hidden');
+    });
+}
 
 // Format duration from HH:MM:SS to readable format
 function formatDuration(durationStr) {
@@ -910,6 +946,8 @@ function initTimelineScroll() {
     window.addEventListener('scroll', handleScroll, { passive: true });
     handleScroll(); // Initial check
 }
+
+setupPwaInstallPrompt();
 
 // Initialize after DOM is ready
 if (document.readyState === 'loading') {

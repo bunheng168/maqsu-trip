@@ -16,6 +16,13 @@
     <!-- Header -->
     <div class="header">
         <div class="header-content">
+            <a href="agenda.html" class="header-list" title="Agenda List View">
+                <svg class="header-list-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <line x1="5" y1="7" x2="19" y2="7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <line x1="5" y1="17" x2="19" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </a>
             <div class="header-day" id="headerDay"></div>
             <a href="emergency.html" class="header-contact" title="Contact">
                 <svg class="header-contact-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -68,6 +75,11 @@
         <div class="scroll-text">More Information</div>
     </div>
 
+    <!-- Install App Button -->
+    <button class="install-button hidden" id="installAppButton">
+        Install App
+    </button>
+
     <!-- Menu Overlay Background -->
     <div class="menu-overlay-bg" id="menuOverlayBg"></div>
     
@@ -75,6 +87,7 @@
     <div class="side-menu" id="sideMenu">
         <div class="menu-close" id="menuClose">×</div>
         <div class="menu-items">
+            <a href="agenda.html" class="menu-item">Agenda List</a>
             <a href="emergency.html" class="menu-item">Emergency Contact</a>
         </div>
     </div>

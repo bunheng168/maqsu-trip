@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#FF69B4">
+    <meta name="description" content="MAQSU Trip - Agenda Overview">
+    <title>Agenda Overview - Pink Trip</title>
+    <link rel="manifest" href="./manifest.json">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Khmer&family=Poppins:wght@300;400;500;600;700&family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <a href="index.html" class="back-button">← Back to Timeline</a>
+            <div class="header-day" id="agendaSummary"></div>
+        </div>
+    </div>
+
+    <main class="agenda-page">
+        <section class="agenda-hero">
+            <div>
+                <h1>Agenda Overview</h1>
+                <p>Browse the complete activity list with times, durations, and statuses.</p>
+            </div>
+            <div class="agenda-meta">
+                <div class="agenda-meta-item">
+                    <span class="meta-label">Total Activities</span>
+                    <span class="meta-value" id="agendaTotal">0</span>
+                </div>
+                <div class="agenda-meta-item">
+                    <span class="meta-label">Completed</span>
+                    <span class="meta-value" id="agendaCompleted">0</span>
+                </div>
+                <div class="agenda-meta-item">
+                    <span class="meta-label">Upcoming</span>
+                    <span class="meta-value" id="agendaUpcoming">0</span>
+                </div>
+            </div>
+        </section>
+
+        <div class="agenda-card">
+            <div class="loading" id="agendaLoading">
+                <div class="loading-spinner"></div>
+                <div>Loading agenda...</div>
+            </div>
+
+            <div class="agenda-table-wrapper hidden" id="agendaTableWrapper">
+                <table class="agenda-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Day</th>
+                            <th>Activity</th>
+                            <th>Location</th>
+                            <th>Start</th>
+                            <th>End</th>
+                            <th>Duration</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="agendaTableBody"></tbody>
+                </table>
+                <div class="agenda-last-updated" id="agendaUpdated"></div>
+            </div>
+
+            <div class="agenda-empty hidden" id="agendaEmpty">
+                <p>No agenda data available.</p>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/agenda.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').catch(() => {});
+            });
+        }
+    </script>
+</body>
+</html>
+

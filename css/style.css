@@ -75,6 +75,34 @@ body, html {
     transform: translateX(-50%) translateY(-10px);
 }
 
+.header-list {
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+}
+
+.header-list-icon {
+    width: 22px;
+    height: 22px;
+    stroke: currentColor;
+}
+
+.header-list:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+}
+
 .header-contact {
     padding: 10px;
     background: rgba(255, 255, 255, 0.15);
@@ -746,6 +774,182 @@ body, html {
     transform: translateX(-50%) translateY(20px);
     pointer-events: none;
     visibility: hidden;
+}
+
+.install-button {
+    position: fixed;
+    right: 20px;
+    bottom: 90px;
+    background: linear-gradient(135deg, #ff8ad6, #ff5ec4);
+    color: #fff;
+    border: none;
+    border-radius: 30px;
+    padding: 14px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(255, 94, 196, 0.35);
+    transition: transform 0.2s ease, opacity 0.2s ease;
+    z-index: 150;
+}
+
+.install-button:hover {
+    transform: translateY(-2px) scale(1.02);
+}
+
+.install-button:active {
+    transform: translateY(1px) scale(0.98);
+}
+
+.install-button.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.agenda-page {
+    max-width: 1200px;
+    margin: 120px auto 80px;
+    padding: 0 20px;
+    color: #fff;
+}
+
+.agenda-hero {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.agenda-hero h1 {
+    font-size: 36px;
+    margin-bottom: 8px;
+}
+
+.agenda-meta {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.agenda-meta-item {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 12px 18px;
+    border-radius: 16px;
+    min-width: 140px;
+}
+
+.agenda-meta-item .meta-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    opacity: 0.7;
+}
+
+.agenda-meta-item .meta-value {
+    display: block;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.agenda-card {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 24px;
+    padding: 24px;
+    backdrop-filter: blur(16px);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+}
+
+.agenda-table-wrapper {
+    overflow-x: auto;
+}
+
+.agenda-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    min-width: 840px;
+}
+
+.agenda-table th,
+.agenda-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: left;
+}
+
+.agenda-table th {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 12px;
+    opacity: 0.7;
+}
+
+.agenda-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.agenda-table-wrapper.hidden,
+.agenda-empty.hidden,
+#agendaLoading.hidden {
+    display: none;
+}
+
+.agenda-empty {
+    text-align: center;
+    padding: 40px;
+    opacity: 0.8;
+}
+
+.agenda-last-updated {
+    text-align: right;
+    margin-top: 12px;
+    font-size: 12px;
+    opacity: 0.7;
+}
+
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.status-complete {
+    background: rgba(76, 217, 100, 0.15);
+    color: #4cd964;
+}
+
+.status-now {
+    background: rgba(255, 204, 0, 0.2);
+    color: #ffcc00;
+}
+
+.status-next,
+.status-upcoming {
+    background: rgba(90, 200, 250, 0.2);
+    color: #5ac8fa;
+}
+
+.status-unknown {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+}
+
+@media (max-width: 768px) {
+    .agenda-hero h1 {
+        font-size: 28px;
+    }
+    
+    .agenda-meta-item {
+        min-width: 120px;
+    }
+    
+    .agenda-card {
+        padding: 18px;
+    }
 }
 
 .scroll-arrow {
