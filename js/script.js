@@ -651,7 +651,7 @@ function updateDetailsSection() {
     if (currentSlideData) {
         // Update description
         if (currentSlideData.activity) {
-            detailsDescription.innerHTML = `<h2>About</h2><p>${currentSlideData.activity}</p>`;
+            detailsDescription.innerHTML = `<h2>About</h2><p>${currentSlideData.about}</p>`;
         } else {
             detailsDescription.innerHTML = '';
         }
