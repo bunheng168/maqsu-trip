@@ -57,6 +57,14 @@ body, html {
     border: 1px solid rgba(255, 255, 255, 0.2);
     display: none;
     transition: all 0.3s ease;
+    opacity: 1;
+    visibility: visible;
+}
+
+.header-day.hidden {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(-50%) translateY(-10px);
 }
 
 .menu-icon {
@@ -87,6 +95,15 @@ body, html {
     padding: 16px 20px;
     background: transparent;
     overflow: visible;
+    transition: all 0.3s ease;
+}
+
+/* Smaller timeline when scrolled */
+.timeline-container.scrolled {
+    top: 10px;
+    padding: 8px 12px;
+    width: 85%;
+    max-width: 600px;
 }
 
 .timeline {
@@ -96,7 +113,12 @@ body, html {
     justify-content: center;
     padding: 12px 0;
     gap: 50px;
-    transition: transform 0.3s ease;
+    transition: all 0.3s ease;
+}
+
+.timeline-container.scrolled .timeline {
+    padding: 6px 0;
+    gap: 30px;
 }
 
 .timeline::before {
@@ -132,6 +154,11 @@ body, html {
     background: transparent;
 }
 
+.timeline-container.scrolled .timeline-item {
+    width: 70px;
+    gap: 6px;
+}
+
 .timeline-item.left-item,
 .timeline-item.right-item {
     opacity: 0.6;
@@ -141,6 +168,10 @@ body, html {
     opacity: 1;
     width: 140px;
     z-index: 3;
+}
+
+.timeline-container.scrolled .timeline-item.active {
+    width: 100px;
 }
 
 .timeline-item:hover {
@@ -156,6 +187,12 @@ body, html {
     border: 2px solid rgba(255, 255, 255, 0.4);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     background: rgba(0, 0, 0, 0.3);
+}
+
+.timeline-container.scrolled .timeline-image-container {
+    width: 32px;
+    height: 32px;
+    border-width: 1.5px;
 }
 
 .timeline-image {
@@ -204,6 +241,16 @@ body, html {
     transform: scale(1.05);
 }
 
+.timeline-container.scrolled .timeline-item.active .timeline-image-container {
+    width: 50px;
+    height: 50px;
+    border-width: 3px;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3),
+                0 0 0 6px rgba(255, 255, 255, 0.15),
+                0 0 15px rgba(255, 255, 255, 0.2);
+    transform: scale(1.02);
+}
+
 .timeline-item.left-item .timeline-image-container,
 .timeline-item.right-item .timeline-image-container {
     border-color: rgba(255, 255, 255, 0.5);
@@ -211,8 +258,8 @@ body, html {
 
 .timeline-item.passed {
     opacity: 0.3;
-    cursor: not-allowed;
-    pointer-events: none;
+    cursor: pointer;
+    /* pointer-events: none; - Disabled to allow navigation to past items */
 }
 
 .timeline-item.passed .timeline-image-container {
@@ -232,6 +279,33 @@ body, html {
 
 .timeline-item.passed:hover {
     opacity: 0.3;
+}
+
+/* Complete status - disabled and non-clickable */
+.timeline-item.complete {
+    opacity: 0.3;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.timeline-item.complete .timeline-image-container {
+    border-color: rgba(255, 255, 255, 0.2);
+    opacity: 0.5;
+}
+
+.timeline-item.complete .timeline-image {
+    filter: grayscale(100%);
+    opacity: 0.5;
+}
+
+.timeline-item.complete .timeline-location,
+.timeline-item.complete .timeline-time {
+    opacity: 0.4;
+}
+
+.timeline-item.complete:hover {
+    opacity: 0.3;
+    cursor: not-allowed;
 }
 
 .timeline-content {
@@ -256,6 +330,11 @@ body, html {
                  0 1px 3px rgba(0, 0, 0, 0.8);
 }
 
+.timeline-container.scrolled .timeline-location {
+    font-size: 11px;
+    letter-spacing: 0.5px;
+}
+
 .timeline-item.active .timeline-location {
     opacity: 1;
     font-weight: 700;
@@ -264,6 +343,11 @@ body, html {
     text-shadow: 0 2px 12px rgba(0, 0, 0, 0.7),
                  0 1px 4px rgba(0, 0, 0, 0.9),
                  0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+.timeline-container.scrolled .timeline-item.active .timeline-location {
+    font-size: 13px;
+    letter-spacing: 0.8px;
 }
 
 .timeline-item:hover .timeline-location {
@@ -282,6 +366,11 @@ body, html {
                  0 1px 2px rgba(0, 0, 0, 0.7);
 }
 
+.timeline-container.scrolled .timeline-time {
+    font-size: 10px;
+    letter-spacing: 0.5px;
+}
+
 .timeline-item.active .timeline-time {
     opacity: 1;
     font-size: 16px;
@@ -289,6 +378,10 @@ body, html {
     text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6),
                  0 1px 3px rgba(0, 0, 0, 0.8),
                  0 0 15px rgba(255, 255, 255, 0.2);
+}
+
+.timeline-container.scrolled .timeline-item.active .timeline-time {
+    font-size: 12px;
 }
 
 .timeline-item:hover .timeline-time {
@@ -1266,6 +1359,15 @@ body, html {
     width: calc(100% - 40px);
     max-width: calc(100% - 40px);
     box-sizing: border-box;
+    transition: all 0.3s ease;
+    opacity: 1;
+    visibility: visible;
+}
+
+.mobile-nav.hidden {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(-50%) translateY(20px);
 }
 
 @media (min-width: 768px) {

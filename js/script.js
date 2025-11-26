@@ -235,7 +235,7 @@ function findCurrentDestinationIndex(data) {
     return 0;
 }
 
-// Update timeline - show only items around current index, always centered with wrap-around
+// Update timeline - show only items around current index, no wrap-around
 function updateTimeline() {
     if (slidesData.length === 0 || !timelineContainer) return;
     
@@ -249,21 +249,15 @@ function updateTimeline() {
     
     timelineContainer.innerHTML = '';
     
-    // Create timeline items with wrap-around support
-    // Calculate which items to show, wrapping around at boundaries
+    // Create timeline items without wrap-around - only show valid indices
     for (let offset = -halfItems; offset <= halfItems; offset++) {
-        // Calculate the actual index with wrap-around
+        // Calculate the actual index without wrap-around
         let itemIndex = currentIndex + offset;
         
-        // Wrap around: if negative, wrap to end; if beyond length, wrap to start
-        if (itemIndex < 0) {
-            itemIndex = slidesData.length + itemIndex; // Wrap to end
-        } else if (itemIndex >= slidesData.length) {
-            itemIndex = itemIndex - slidesData.length; // Wrap to start
+        // Skip items that are out of bounds (no wrapping)
+        if (itemIndex < 0 || itemIndex >= slidesData.length) {
+            continue; // Skip this item instead of wrapping
         }
-        
-        // Safety check: ensure index is valid
-        if (itemIndex < 0 || itemIndex >= slidesData.length) continue;
         
         const slideData = slidesData[itemIndex];
         // Safety check: ensure slideData exists
@@ -274,7 +268,6 @@ function updateTimeline() {
         
         // Determine position relative to center - this ensures consistent styling
         // Items before currentIndex are left-item, items after are right-item
-        // For wrap-around, we use the offset to determine position
         if (offset === 0) {
             timelineItem.classList.add('active');
         } else if (offset < 0) {
@@ -283,9 +276,11 @@ function updateTimeline() {
             timelineItem.classList.add('right-item');
         }
         
-        // Check if this slide has passed and add 'passed' class
-        if (hasSlidePassed(itemIndex)) {
-            timelineItem.classList.add('passed');
+        // Removed 'passed' class - all items are now clickable regardless of date
+        
+        // Add 'complete' class if status is complete (for visual styling)
+        if (slideData.status && slideData.status.toLowerCase() === 'completed') {
+            timelineItem.classList.add('complete');
         }
         
         // Get image URL or use default
@@ -347,11 +342,15 @@ function updateTimeline() {
         
         // Add click handler to navigate to this slide
         timelineItem.addEventListener('click', () => {
-            if (!isTransitioning && itemIndex !== currentIndex) {
-                // Prevent navigating to slides that have passed
-                if (hasSlidePassed(itemIndex)) {
-                    return;
-                }
+            if (isTransitioning) return;
+            
+            // Prevent navigating to slides with status "complete"
+            const slideData = slidesData[itemIndex];
+            if (slideData && slideData.status && slideData.status.toLowerCase() === 'completed') {
+                return; // Block navigation to completed items
+            }
+            
+            if (itemIndex !== currentIndex) {
                 currentIndex = itemIndex;
                 userHasNavigated = true; // Mark that user has manually navigated
                 updateSlides();
@@ -381,18 +380,19 @@ fetch(csvUrl)
                 start: formatTime(field("ផ្តើម")),
                 end: formatTime(field("ចប់")),
                 activity: field("សកម្មភាព"),
+                about:  field("About"),
                 day: field("Day") || field("day") || "",
                 imageUrl: field("Image URL") || field("image url") || field("ImageUrl") || field("imageUrl") || field("Image") || field("image") || "",
-                googleMap: field("google map") || field("Google Map") || field("googlemap") || field("GoogleMap") || field("Google Maps") || field("google maps") || field("map") || field("Map") || ""
+                googleMap: field("google map") || field("Google Map") || field("googlemap") || field("GoogleMap") || field("Google Maps") || field("google maps") || field("map") || field("Map") || "",
+                status: field("Status") || field("status") || ""
             });
         });
 
         // Build date to day number mapping
         buildDateToDayMap();
 
-        // Find current destination index
-        const currentDestinationIndex = findCurrentDestinationIndex(slidesData);
-        currentIndex = currentDestinationIndex;
+        // Start from first date (index 0)
+        currentIndex = 0;
 
         // Create slides
         slidesData.forEach((slideData, index) => {
@@ -453,7 +453,7 @@ fetch(csvUrl)
             img.src = imageUrl;
         });
 
-        // Initialize to current destination
+        // Initialize to first slide (index 0)
         if (slides.length > 0) {
             slides[currentIndex].classList.add('active');
             const offset = currentIndex * window.innerWidth;
@@ -744,7 +744,15 @@ function nextSlide() {
         return; // Block navigation - already at last page
     }
     
-    currentIndex = currentIndex + 1;
+    const nextIndex = currentIndex + 1;
+    
+    // Prevent navigating to slides with status "complete"
+    const nextSlideData = slidesData[nextIndex];
+    if (nextSlideData && nextSlideData.status && nextSlideData.status.toLowerCase() === 'completed') {
+        return; // Block navigation to completed items
+    }
+    
+    currentIndex = nextIndex;
     userHasNavigated = true; // Mark that user has manually navigated
     updateSlides();
 }
@@ -760,12 +768,12 @@ function prevSlide() {
     // Calculate the immediate previous slide index
     const prevIndex = currentIndex - 1;
     
-    // If the immediate previous slide has passed, don't allow navigation back at all
-    if (hasSlidePassed(prevIndex)) {
-        return; // Block navigation completely
+    // Prevent navigating to slides with status "complete"
+    const prevSlideData = slidesData[prevIndex];
+    if (prevSlideData && prevSlideData.status && prevSlideData.status.toLowerCase() === 'completed') {
+        return; // Block navigation to completed items
     }
     
-    // Only navigate if the previous slide hasn't passed
     currentIndex = prevIndex;
     userHasNavigated = true; // Mark that user has manually navigated
     updateSlides();
@@ -778,19 +786,8 @@ window.addEventListener('resize', () => {
     }
 });
 
-// Auto-update current destination every minute (only if user hasn't manually navigated)
-setInterval(() => {
-    // Don't auto-update if user has manually navigated
-    if (userHasNavigated) {
-        return;
-    }
-    
-    const newCurrentIndex = findCurrentDestinationIndex(slidesData);
-    if (newCurrentIndex !== currentIndex) {
-        currentIndex = newCurrentIndex;
-        updateSlides();
-    }
-}, 60000); // Check every minute
+// Auto-update disabled - starts from first date and stays there
+// (Removed auto-update to current destination since we start from first date)
 
 // Scroll to details section when arrow is clicked
 function scrollToDetails() {
@@ -821,4 +818,88 @@ if (menuOverlayBg) {
         sideMenu.classList.remove('active');
         menuOverlayBg.classList.remove('active');
     });
+}
+
+// Make timeline smaller when scrolling down - using Intersection Observer for better reliability
+function initTimelineScroll() {
+    const timelineEl = document.getElementById('timelineContainer');
+    const detailsEl = document.getElementById('detailsSection');
+    
+    if (!timelineEl) return;
+    
+    // Method 1: Use Intersection Observer to detect when details section comes into view
+    if (detailsEl && 'IntersectionObserver' in window) {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                const headerDayEl = document.getElementById('headerDay');
+                const mobileNavEl = document.querySelector('.mobile-nav');
+                
+                if (entry.isIntersecting) {
+                    timelineEl.classList.add('scrolled');
+                    // Hide headerDay and mobile-nav when details section is visible
+                    if (headerDayEl) {
+                        headerDayEl.classList.add('hidden');
+                    }
+                    if (mobileNavEl) {
+                        mobileNavEl.classList.add('hidden');
+                    }
+                } else {
+                    // Only remove if scrolled back to top
+                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                    if (scrollTop < 100) {
+                        timelineEl.classList.remove('scrolled');
+                        // Show headerDay and mobile-nav when at top
+                        if (headerDayEl) {
+                            headerDayEl.classList.remove('hidden');
+                        }
+                        if (mobileNavEl) {
+                            mobileNavEl.classList.remove('hidden');
+                        }
+                    }
+                }
+            });
+        }, {
+            threshold: 0.1, // Trigger when 10% of details section is visible
+            rootMargin: '-100px 0px 0px 0px' // Start shrinking before it's fully in view
+        });
+        
+        observer.observe(detailsEl);
+    }
+    
+    // Method 2: Fallback to scroll listener
+    function handleScroll() {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop;
+        const headerDayEl = document.getElementById('headerDay');
+        const mobileNavEl = document.querySelector('.mobile-nav');
+        
+        if (scrollTop > 100) {
+            timelineEl.classList.add('scrolled');
+            // Hide headerDay and mobile-nav when scrolled
+            if (headerDayEl) {
+                headerDayEl.classList.add('hidden');
+            }
+            if (mobileNavEl) {
+                mobileNavEl.classList.add('hidden');
+            }
+        } else {
+            timelineEl.classList.remove('scrolled');
+            // Show headerDay and mobile-nav when at top
+            if (headerDayEl) {
+                headerDayEl.classList.remove('hidden');
+            }
+            if (mobileNavEl) {
+                mobileNavEl.classList.remove('hidden');
+            }
+        }
+    }
+    
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll(); // Initial check
+}
+
+// Initialize after DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initTimelineScroll);
+} else {
+    setTimeout(initTimelineScroll, 200);
 }
