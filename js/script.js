@@ -6,6 +6,8 @@ const headerDay = document.getElementById('headerDay');
 const detailsSection = document.getElementById('detailsSection');
 const detailsDescription = document.getElementById('detailsDescription');
 const detailsMap = document.getElementById('detailsMap');
+const navArrowLeft = document.getElementById('navArrowLeft');
+const navArrowRight = document.getElementById('navArrowRight');
 const menuIcon = document.querySelector('.menu-icon');
 const sideMenu = document.getElementById('sideMenu');
 const menuClose = document.getElementById('menuClose');
@@ -45,6 +47,13 @@ function formatTime(timeStr) {
     
     // Remove seconds if present (e.g., "10:20:00 AM" -> "10:20 AM")
     return timeStr.replace(/(\d{1,2}:\d{2}):\d{2}(\s*[AP]M)/i, '$1$2');
+}
+
+// Truncate text to a maximum length and add "..."
+function truncateText(text, maxLength = 50) {
+    if (!text) return '';
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength).trim() + '...';
 }
 
 // Parse time string "HH:MM" or "HH:MM AM/PM" to minutes since midnight
@@ -303,7 +312,7 @@ function updateTimeline() {
             </div>
             <div class="timeline-content">
                 <span class="timeline-location">${location}</span>
-                ${timeRange ? `<span class="timeline-time">${timeRange}</span>` : ''}
+                
             </div>
         `;
         
@@ -412,7 +421,7 @@ fetch(csvUrl)
                     <div class="badges-container">
                         <div class="duration-badge">${slideData.duration}</div>
                     </div>
-                    <h1 class="slide-title">${slideData.location}</h1>
+                    <h1 class="slide-title">${slideData.activity}</h1>
                     <div class="time-range">
                         <svg class="time-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -422,7 +431,7 @@ fetch(csvUrl)
                         <span class="time-separator">—</span>
                         <span>${slideData.end}</span>
                     </div>
-                    <p class="slide-description">${slideData.activity}</p>
+                    <p class="slide-description">${truncateText(slideData.about, 50)}</p>
                     <div class="scroll-indicator">
                         <div class="scroll-arrow" onclick="scrollToDetails()">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -466,6 +475,7 @@ fetch(csvUrl)
         setupTouchHandlers();
         setupKeyboardNav();
         setupMouseDrag();
+        setupArrowNavigation();
     })
     .catch(err => {
         console.error('Error:', err);
@@ -524,6 +534,20 @@ function setupMouseDrag() {
         }
         isDragging = false;
     });
+}
+
+function setupArrowNavigation() {
+    if (navArrowLeft) {
+        navArrowLeft.addEventListener('click', () => {
+            prevSlide();
+        });
+    }
+    
+    if (navArrowRight) {
+        navArrowRight.addEventListener('click', () => {
+            nextSlide();
+        });
+    }
 }
 
 function updateSlides() {
@@ -642,15 +666,10 @@ function updateDetailsSection() {
     if (slidesData.length === 0 || !detailsSection || !detailsDescription || !detailsMap) return;
     
     const currentSlideData = slidesData[currentIndex];
-    // Debug: log the google map data
-    console.log('Current slide data:', currentSlideData);
-    console.log('Google Map data:', currentSlideData?.googleMap);
-    console.log('Google Map data type:', typeof currentSlideData?.googleMap);
-    console.log('Contains iframe?', currentSlideData?.googleMap?.includes('<iframe') || currentSlideData?.googleMap?.includes('<IFRAME'));
     
     if (currentSlideData) {
         // Update description
-        if (currentSlideData.activity) {
+        if (currentSlideData.about) {
             detailsDescription.innerHTML = `<h2>About</h2><p>${currentSlideData.about}</p>`;
         } else {
             detailsDescription.innerHTML = '';
@@ -832,28 +851,21 @@ function initTimelineScroll() {
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 const headerDayEl = document.getElementById('headerDay');
-                const mobileNavEl = document.querySelector('.mobile-nav');
                 
                 if (entry.isIntersecting) {
                     timelineEl.classList.add('scrolled');
-                    // Hide headerDay and mobile-nav when details section is visible
+                    // Hide headerDay when details section is visible
                     if (headerDayEl) {
                         headerDayEl.classList.add('hidden');
-                    }
-                    if (mobileNavEl) {
-                        mobileNavEl.classList.add('hidden');
                     }
                 } else {
                     // Only remove if scrolled back to top
                     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
                     if (scrollTop < 100) {
                         timelineEl.classList.remove('scrolled');
-                        // Show headerDay and mobile-nav when at top
+                        // Show headerDay when at top
                         if (headerDayEl) {
                             headerDayEl.classList.remove('hidden');
-                        }
-                        if (mobileNavEl) {
-                            mobileNavEl.classList.remove('hidden');
                         }
                     }
                 }
@@ -870,25 +882,18 @@ function initTimelineScroll() {
     function handleScroll() {
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop;
         const headerDayEl = document.getElementById('headerDay');
-        const mobileNavEl = document.querySelector('.mobile-nav');
         
         if (scrollTop > 100) {
             timelineEl.classList.add('scrolled');
-            // Hide headerDay and mobile-nav when scrolled
+            // Hide headerDay when scrolled
             if (headerDayEl) {
                 headerDayEl.classList.add('hidden');
             }
-            if (mobileNavEl) {
-                mobileNavEl.classList.add('hidden');
-            }
         } else {
             timelineEl.classList.remove('scrolled');
-            // Show headerDay and mobile-nav when at top
+            // Show headerDay when at top
             if (headerDayEl) {
                 headerDayEl.classList.remove('hidden');
-            }
-            if (mobileNavEl) {
-                mobileNavEl.classList.remove('hidden');
             }
         }
     }
