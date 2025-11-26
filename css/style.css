@@ -780,21 +780,23 @@ body, html {
     position: fixed;
     right: 20px;
     bottom: 90px;
-    background: linear-gradient(135deg, #ff8ad6, #ff5ec4);
+    background: rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(18px);
     color: #fff;
-    border: none;
-    border-radius: 30px;
-    padding: 14px 24px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 32px;
+    padding: 14px 26px;
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    box-shadow: 0 10px 30px rgba(255, 94, 196, 0.35);
-    transition: transform 0.2s ease, opacity 0.2s ease;
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
+    transition: transform 0.2s ease, opacity 0.2s ease, background 0.2s ease;
     z-index: 150;
 }
 
 .install-button:hover {
     transform: translateY(-2px) scale(1.02);
+    background: rgba(255, 255, 255, 0.25);
 }
 
 .install-button:active {
