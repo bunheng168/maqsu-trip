@@ -56,7 +56,7 @@ async function loadSponsors(elements) {
 
     try {
         const response = await fetch(`${sponsorCsvUrl}&_t=${Date.now()}`, {
-            cache: 'no-cache',
+            cache: 'no-store',
         });
         const text = await response.text();
         const sponsors = parseCSV(text).filter((item) => item.name !== '-');

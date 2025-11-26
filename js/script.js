@@ -407,7 +407,7 @@ function updateTimeline() {
     }
 }
 
-fetch(csvUrl)
+fetch(`${csvUrl}&_t=${Date.now()}`, { cache: 'no-store' })
     .then(res => res.text())
     .then(data => {
         const rows = data.trim().split('\n').map(r => r.split(','));

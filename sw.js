@@ -65,17 +65,6 @@ self.addEventListener('fetch', (event) => {
             return response;
           }
           
-          // Clone the response
-          const responseToCache = response.clone();
-          
-          // Cache dynamic content (like CSV from Google Sheets)
-          if (event.request.url.includes('docs.google.com') || 
-              event.request.url.includes('spreadsheets')) {
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, responseToCache);
-            });
-          }
-          
           return response;
         }).catch(() => {
           // If fetch fails and it's a navigation request, return offline page

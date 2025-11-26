@@ -266,7 +266,7 @@ function displayContacts(contacts) {
 }
 
 // Fetch and display emergency contacts
-fetch(emergencyCsvUrl)
+fetch(`${emergencyCsvUrl}&_t=${Date.now()}`, { cache: 'no-store' })
     .then(res => res.text())
     .then(data => {
         const contacts = parseCSV(data);

@@ -110,11 +110,7 @@ function renderTable(data) {
 async function loadAgenda() {
     try {
         const response = await fetch(`${csvUrl}&_t=${Date.now()}`, {
-            cache: 'no-cache',
-            headers: {
-                'Cache-Control': 'no-cache',
-                'Pragma': 'no-cache'
-            }
+            cache: 'no-store'
         });
         const text = await response.text();
         const parsedData = parseCSV(text).filter((item) => item.activity);
