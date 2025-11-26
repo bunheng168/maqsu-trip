@@ -8,6 +8,7 @@ const detailsDescription = document.getElementById('detailsDescription');
 const detailsMap = document.getElementById('detailsMap');
 const navArrowLeft = document.getElementById('navArrowLeft');
 const navArrowRight = document.getElementById('navArrowRight');
+const scrollIndicator = document.getElementById('scrollIndicator');
 const menuIcon = document.querySelector('.menu-icon');
 const sideMenu = document.getElementById('sideMenu');
 const menuClose = document.getElementById('menuClose');
@@ -432,14 +433,6 @@ fetch(csvUrl)
                         <span>${slideData.end}</span>
                     </div>
                     <p class="slide-description">${truncateText(slideData.about, 50)}</p>
-                    <div class="scroll-indicator">
-                        <div class="scroll-arrow" onclick="scrollToDetails()">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M12 5v14M19 12l-7 7-7-7"/>
-                            </svg>
-                        </div>
-                        <div class="scroll-text">More Information</div>
-                    </div>
                 </div>
             `;
             
@@ -858,6 +851,10 @@ function initTimelineScroll() {
                     if (headerDayEl) {
                         headerDayEl.classList.add('hidden');
                     }
+                    // Hide scrollIndicator when scrolled down
+                    if (scrollIndicator) {
+                        scrollIndicator.classList.add('hidden');
+                    }
                 } else {
                     // Only remove if scrolled back to top
                     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
@@ -866,6 +863,10 @@ function initTimelineScroll() {
                         // Show headerDay when at top
                         if (headerDayEl) {
                             headerDayEl.classList.remove('hidden');
+                        }
+                        // Show scrollIndicator when at top
+                        if (scrollIndicator) {
+                            scrollIndicator.classList.remove('hidden');
                         }
                     }
                 }
@@ -889,11 +890,19 @@ function initTimelineScroll() {
             if (headerDayEl) {
                 headerDayEl.classList.add('hidden');
             }
+            // Hide scrollIndicator when scrolled down
+            if (scrollIndicator) {
+                scrollIndicator.classList.add('hidden');
+            }
         } else {
             timelineEl.classList.remove('scrolled');
             // Show headerDay when at top
             if (headerDayEl) {
                 headerDayEl.classList.remove('hidden');
+            }
+            // Show scrollIndicator when at top
+            if (scrollIndicator) {
+                scrollIndicator.classList.remove('hidden');
             }
         }
     }
