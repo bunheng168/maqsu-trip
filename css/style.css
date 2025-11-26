@@ -1429,34 +1429,32 @@ body, html {
     transform: translateX(-3px);
 }
 
+.donate-link-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 22px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    margin-top: 16px;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.donate-link-button:hover {
+    background: rgba(255, 255, 255, 0.16);
+    transform: translateY(-1px);
+}
+
 /* Emergency Contact Full Page */
 .emergency-page-full {
     min-height: 100vh;
-    background-image: url('https://i.postimg.cc/mZ9sfBH8/Cambodia-temple-9.jpg');
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
+    background: #050505;
     padding: 120px 20px 60px;
-    position: relative;
-}
-
-.emergency-page-full::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, rgba(34, 139, 34, 0.4) 0%, rgba(0, 100, 0, 0.5) 50%, rgba(0, 50, 0, 0.4) 100%),
-                rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    z-index: 0;
-}
-
-.emergency-page-full > * {
-    position: relative;
-    z-index: 1;
 }
 
 .emergency-content-full {
@@ -1464,7 +1462,10 @@ body, html {
     margin: 0 auto;
     border-radius: 24px;
     padding: 40px 30px;
-
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(18px);
 }
 
 @media (max-width: 768px) {
@@ -1497,6 +1498,12 @@ body, html {
     
     .emergency-item-full {
         padding: 20px;
+        flex-direction: column;
+    }
+    
+    .emergency-avatar {
+        width: 100%;
+        height: 220px;
     }
     
     .emergency-name {
@@ -1539,6 +1546,12 @@ body, html {
     
     .emergency-item-full {
         padding: 16px;
+        flex-direction: column;
+    }
+    
+    .emergency-avatar {
+        width: 100%;
+        height: 200px;
     }
     
     .emergency-name {
@@ -1624,6 +1637,9 @@ body, html {
     border-radius: 16px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     transition: all 0.3s ease;
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
 }
 
 .emergency-item-full:hover {
@@ -1636,6 +1652,23 @@ body, html {
     display: flex;
     flex-direction: column;
     gap: 12px;
+}
+
+.emergency-avatar {
+    width: 96px;
+    height: 96px;
+    border-radius: 18px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.emergency-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }
 
 .emergency-name {

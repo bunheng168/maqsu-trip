@@ -84,6 +84,16 @@ function parseCSVLine(line) {
     return values;
 }
 
+function escapeHtml(value) {
+    if (typeof value !== 'string') return '';
+    return value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 // Group contacts by category
 function groupByCategory(contacts) {
     const grouped = {};
@@ -206,6 +216,7 @@ function displayContacts(contacts) {
             const phone = contact['Phone number'] || '';
             const telegram = contact.telegram || contact.Telegram || '';
             const description = contact.Description || '';
+            const imageUrl = contact.Image || contact.image || contact.Photo || contact.photo || '';
             
             // Format phone for display
             const displayPhone = formatPhoneNumber(phone);
@@ -214,10 +225,18 @@ function displayContacts(contacts) {
             // Format Telegram
             const telegramLink = getTelegramLink(telegram);
             const displayTelegram = telegram ? (telegram.startsWith('@') ? telegram : '@' + telegram) : '';
+            const safeName = escapeHtml(name);
+            const safeDescription = escapeHtml(description);
+            const safeImageUrl = escapeHtml(imageUrl);
             
             contactItem.innerHTML = `
+                ${imageUrl ? `
+                    <div class="emergency-avatar">
+                        <img src="${safeImageUrl}" alt="${safeName}" loading="lazy" />
+                    </div>
+                ` : ''}
                 <div class="emergency-details">
-                    <div class="emergency-name">${name}</div>
+                    <div class="emergency-name">${safeName}</div>
                     ${displayPhone ? `
                         <div class="emergency-contact-row">
                             ${getPhoneIcon()}
@@ -230,7 +249,7 @@ function displayContacts(contacts) {
                             <a href="${telegramLink}" target="_blank" class="emergency-value-full emergency-telegram">${displayTelegram}</a>
                         </div>
                     ` : ''}
-                    ${description ? `<div class="emergency-description">${description}</div>` : ''}
+                    ${description ? `<div class="emergency-description">${safeDescription}</div>` : ''}
                 </div>
             `;
             
